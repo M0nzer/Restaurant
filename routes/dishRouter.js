@@ -1,5 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+
+const Dishes = require('../modules/dishes');
+
 //Router Def
 const dishRouter = express.Router();
 //MiddileWares
@@ -8,19 +12,27 @@ dishRouter.use(bodyParser.json());
 dishRouter.route('/');
 //Main Routes
 //http://localhost:3000/deshes
-//All
-dishRouter.all('deshes' ,(req ,res , next)=>{
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain')
-    });
 //Route GET /deshes
 dishRouter.get('/deshes' , (req , res ,next)=>{
-    res.end('We will send all the deshes to you very soon!');
+    Dishes.find({})
+    .then((dishes)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(dishes);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
 //Route POST /deshes
 dishRouter.post('/deshes' , (req , res ,next)=>{
-    res.end(`well add : ${req.body.name} with detels ${req.body.description}`);
+    Dishes.create(req.body)
+    .then((dish)=>{
+        console.log('dish created:' , dish);
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(dish);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
     //Route PUT /deshes
@@ -31,7 +43,13 @@ dishRouter.put('/deshes' , (req , res ,next)=>{
 
     //Route DELETE /deshes
 dishRouter.delete('/deshes' , (req , res ,next)=>{
-    res.end('Not Allowd!');
+    Dishes.remove({})
+    .then((resp)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(resp);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
 //Route With Params------------------------------------------------------------------
@@ -39,7 +57,13 @@ dishRouter.delete('/deshes' , (req , res ,next)=>{
 
     //Route GET /deshes/:deshid
 dishRouter.get('/deshes/:deshid' , (req , res ,next)=>{
-    res.end('We will send deshes '+ req.params.deshid + ' to you very soon!');
+    Dishes.findById(req.params.deshid)
+    .then((dish)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(dish);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
 //Route POST /deshes/:deshid
@@ -50,13 +74,26 @@ dishRouter.post('/deshes/:deshid' , (req , res ,next)=>{
 
     //Route PUT /deshes/:deshid
 dishRouter.put('/deshes/:deshid' , (req , res ,next)=>{
-    res.write(`well update the desh:` + req.params.deshid + "\n");
-    res.end(`well update the desh:` + req.body.name + ` with ` + req.body.description);
+    Dishes.findByIdAndUpdate(req.params.deshid , {
+        $set : req.body
+    } , {new : true})
+    .then((dish)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(dish);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
     //Route DELETE /deshes/:deshid
 dishRouter.delete('/deshes/:deshid' , (req , res ,next)=>{
-    res.end(`deleting ${req.params.deshid}`);
+    Dishes.findByIdAndRemove(req.params.deshid)
+    .then((resp)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(resp);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
     module.exports = dishRouter;
