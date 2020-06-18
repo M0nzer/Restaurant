@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const Promotions = require('../modules/promotions');
 //Router Def
 const promoRouter = express.Router();
 //MiddileWares
@@ -8,19 +9,27 @@ promoRouter.use(bodyParser.json());
 promoRouter.route('/');
 //Main Routes
 //http://localhost:3000/promotions
-//All
-promoRouter.all('promotions' ,(req ,res , next)=>{
-    res.statusCode = 200;
-    res.setHeader('Content-Type','text/plain')
-    });
 //Route GET /promotions
 promoRouter.get('/promotions' , (req , res ,next)=>{
-    res.end('We will send all the PROMO to you very soon!');
+Promotions.find({})
+.then((promotions)=>{
+    res.statusCode = 200;
+    res.setHeader('Content-Type' , 'application/json');
+    res.json(promotions);
+}, (err)=>next(err))
+.catch((err) =>next(err));
     });
 
 //Route POST /promotions
 promoRouter.post('/promotions' , (req , res ,next)=>{
-    res.end(`well add : ${req.body.name} with detels ${req.body.description}`);
+    Promotions.create(req.body)
+    .then((Promo)=>{
+        console.log('You Created:' , Promo);
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(Promo);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
     //Route PUT /promotions
@@ -31,7 +40,13 @@ promoRouter.put('/promotions' , (req , res ,next)=>{
 
     //Route DELETE /promotions
 promoRouter.delete('/promotions' , (req , res ,next)=>{
-    res.end('Not Allowd!');
+    Promotions.remove({})
+    .then((resp)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(resp);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
 //Route With Params------------------------------------------------------------------
@@ -39,7 +54,12 @@ promoRouter.delete('/promotions' , (req , res ,next)=>{
 
     //Route GET /promotions/:promoid
 promoRouter.get('/promotions/:promoid' , (req , res ,next)=>{
-    res.end('We will send PROMO: '+ req.params.promoid + ' to you very soon!');
+    Promotions.findById(req.params.promoid)
+    .then((resp) =>{
+        res.status = 200;
+        res.setHeader('Content-Type' , 'appliction/json');
+        res.json(resp);
+    }).catch((err)=>next(err));
     });
 
 //Route POST /promotions/:promoid
@@ -50,13 +70,26 @@ promoRouter.post('/promotions/:promoid' , (req , res ,next)=>{
 
     //Route PUT /promotions/:promoid
 promoRouter.put('/promotions/:promoid' , (req , res ,next)=>{
-    res.write(`well update the PROMO:` + req.params.promoid + "\n");
-    res.end(`well update with:` + req.body.name + ` with ` + req.body.description);
+    Promotions.findByIdAndUpdate(req.params.promoid , {
+        $set : req.body
+    } , {new : true})
+    .then((promo)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(promo);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
     //Route DELETE /promotions/:promoid
 promoRouter.delete('/promotions/:promoid' , (req , res ,next)=>{
-    res.end(`deleting promotion ${req.params.promoid}`);
+    Promotions.findByIdAndRemove(req.params.promoid)
+    .then((resp)=>{
+        res.statusCode = 200;
+        res.setHeader('Content-Type' , 'aaplication/json');
+        res.json(resp);
+    }, (err)=>next(err))
+    .catch((err) =>next(err));
     });
 
     module.exports = promoRouter;
