@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+var authenticate = require('../authenticate');
 
 const Dishes = require('../modules/dishes');
 
@@ -23,7 +24,7 @@ dishRouter.get('/deshes' , (req , res ,next)=>{
     });
 
 //Route POST /deshes
-dishRouter.post('/deshes' , (req , res ,next)=>{
+dishRouter.post('/deshes' ,authenticate.verifyUser , (req , res ,next)=>{
     Dishes.create(req.body)
     .then((dish)=>{
         console.log('dish created:' , dish);
@@ -35,13 +36,13 @@ dishRouter.post('/deshes' , (req , res ,next)=>{
     });
 
     //Route PUT /deshes
-dishRouter.put('/deshes' , (req , res ,next)=>{
+dishRouter.put('/deshes', authenticate.verifyUser , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route DELETE /deshes
-dishRouter.delete('/deshes' , (req , res ,next)=>{
+dishRouter.delete('/deshes', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.remove({})
     .then((resp)=>{
         res.statusCode = 200;
@@ -66,13 +67,13 @@ dishRouter.get('/deshes/:deshid' , (req , res ,next)=>{
     });
 
 //Route POST /deshes/:deshid
-dishRouter.post('/deshes/:deshid' , (req , res ,next)=>{
+dishRouter.post('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route PUT /deshes/:deshid
-dishRouter.put('/deshes/:deshid' , (req , res ,next)=>{
+dishRouter.put('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findByIdAndUpdate(req.params.deshid , {
         $set : req.body
     } , {new : true})
@@ -85,7 +86,7 @@ dishRouter.put('/deshes/:deshid' , (req , res ,next)=>{
     });
 
     //Route DELETE /deshes/:deshid
-dishRouter.delete('/deshes/:deshid' , (req , res ,next)=>{
+dishRouter.delete('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findByIdAndRemove(req.params.deshid)
     .then((resp)=>{
         res.statusCode = 200;
@@ -115,7 +116,7 @@ dishRouter.get('/deshes/:deshid/comments' , (req , res ,next)=>{
     });
 
 //Route POST /deshes/:deshid/comments
-dishRouter.post('/deshes/:deshid/comments' , (req , res ,next)=>{
+dishRouter.post('/deshes/:deshid/comments', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish) => {
         if (dish != null) {
@@ -137,13 +138,13 @@ dishRouter.post('/deshes/:deshid/comments' , (req , res ,next)=>{
     });
 
     //Route PUT /deshes/:deshid/comments
-dishRouter.put('/deshes/:deshid/comments' , (req , res ,next)=>{
+dishRouter.put('/deshes/:deshid/comments', authenticate.verifyUser , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route DELETE /deshes/:deshid/comments
-dishRouter.delete('/deshes/:deshid/comments' , (req , res ,next)=>{
+dishRouter.delete('/deshes/:deshid/comments', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish)=>{
         if (dish != null){
@@ -190,13 +191,13 @@ dishRouter.get('/deshes/:deshid/comments/:commentid' , (req , res ,next)=>{
     });
 
 //Route POST /deshes/:deshid/comments/:commentid
-dishRouter.post('/deshes/:deshid/comments/:commentid' , (req , res ,next)=>{
+dishRouter.post('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route PUT /deshes/:deshid/comments/:commentid
-dishRouter.put('/deshes/:deshid/comments/:commentid' , (req , res ,next)=>{
+dishRouter.put('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish)=>{
         if (dish != null && dish.comments.id(req.params.commentid) != null){
@@ -226,7 +227,7 @@ dishRouter.put('/deshes/:deshid/comments/:commentid' , (req , res ,next)=>{
     });
 
     //Route DELETE /deshes/:deshid/comments/:commentid
-dishRouter.delete('/deshes/:deshid/comments/:commentid' , (req , res ,next)=>{
+dishRouter.delete('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish)=>{
         if (dish != null && dish.comments.id(req.params.commentid) != null){
