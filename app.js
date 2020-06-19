@@ -3,19 +3,21 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const mongoose = require("mongoose");
-const session = require('express-session');
-const fileStorge = require('session-file-store')(session);
+var mongoose = require("mongoose");
+var session = require('express-session');
+var fileStorge = require('session-file-store')(session);
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var deshRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
-const Dishes = require('./modules/dishes');
+var Dishes = require('./modules/dishes');
+var authenticate = require('./authenticate');
+const passport = require('passport');
 
-const url = 'mongodb://localhost:27017/conFusion';
-const connect = mongoose.connect(url);
+var url = 'mongodb://localhost:27017/conFusion';
+var connect = mongoose.connect(url);
 
 connect.then((db)=>{
 console.log('connect correctly to the server');
@@ -39,6 +41,8 @@ app.use(session({
   resave : false,
   store : new fileStorge()
 }));
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
@@ -46,21 +50,13 @@ app.use('/users', usersRouter);
 
 //auth
 function auth (req, res, next) {
-console.log(req.session);
-  if (!req.session.user) {
+  if (!req.user) {
       var err = new Error('You are not authenticated!');             
-      err.status = 401;
+      err.status = 403;
       return next(err);
   }
   else {
-      if (req.session.user === 'authenticated') {
           next();
-      }
-      else {
-          var err = new Error('You are not authenticated!');
-          err.status = 403;
-          next(err);
-      }
   }
 }
 
