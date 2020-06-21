@@ -1,4 +1,6 @@
 const express = require('express');
+//line 215 , 216 , 260 , 261
+
 const bodyParser = require('body-parser');
 var authenticate = require('../authenticate');
 
@@ -25,7 +27,7 @@ dishRouter.get('/deshes' , (req , res ,next)=>{
     });
 
 //Route POST /deshes
-dishRouter.post('/deshes' ,authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.post('/deshes' ,authenticate.verifyUser,authenticate.verifyAdmin , (req , res ,next)=>{
     Dishes.create(req.body)
     .then((dish)=>{
         console.log('dish created:' , dish);
@@ -37,13 +39,13 @@ dishRouter.post('/deshes' ,authenticate.verifyUser , (req , res ,next)=>{
     });
 
     //Route PUT /deshes
-dishRouter.put('/deshes', authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.put('/deshes', authenticate.verifyUser ,authenticate.verifyAdmin , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route DELETE /deshes
-dishRouter.delete('/deshes', authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.delete('/deshes', authenticate.verifyUser,authenticate.verifyAdmin , (req , res ,next)=>{
     Dishes.remove({})
     .then((resp)=>{
         res.statusCode = 200;
@@ -69,13 +71,13 @@ dishRouter.get('/deshes/:deshid' , (req , res ,next)=>{
     });
 
 //Route POST /deshes/:deshid
-dishRouter.post('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.post('/deshes/:deshid', authenticate.verifyUser,authenticate.verifyAdmin , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route PUT /deshes/:deshid
-dishRouter.put('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.put('/deshes/:deshid', authenticate.verifyUser,authenticate.verifyAdmin , (req , res ,next)=>{
     Dishes.findByIdAndUpdate(req.params.deshid , {
         $set : req.body
     } , {new : true})
@@ -88,7 +90,7 @@ dishRouter.put('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
     });
 
     //Route DELETE /deshes/:deshid
-dishRouter.delete('/deshes/:deshid', authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.delete('/deshes/:deshid', authenticate.verifyUser,authenticate.verifyAdmin , (req , res ,next)=>{
     Dishes.findByIdAndRemove(req.params.deshid)
     .then((resp)=>{
         res.statusCode = 200;
@@ -153,7 +155,7 @@ dishRouter.put('/deshes/:deshid/comments', authenticate.verifyUser , (req , res 
     });
 
     //Route DELETE /deshes/:deshid/comments
-dishRouter.delete('/deshes/:deshid/comments', authenticate.verifyUser , (req , res ,next)=>{
+dishRouter.delete('/deshes/:deshid/comments', authenticate.verifyUser,authenticate.verifyAdmin , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish)=>{
         if (dish != null){
@@ -210,12 +212,22 @@ dishRouter.post('/deshes/:deshid/comments/:commentid', authenticate.verifyUser ,
 dishRouter.put('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish)=>{
-        if (dish != null && dish.comments.id(req.params.commentid) != null){
-            if (req.body.rating){
-                dish.comments.id(req.params.commentid).rating = req.body.rating;
+        //chack the author here (comm) for the comment id
+        //then i chack the comment author
+        var comm = dish.comments.id(req.params.commentid);
+        if(!comm.author._id.equals(req.user._id))
+        {
+            console.log(req.user._id);
+            var err = new Error('You are not the author of this comment');
+            err.status = 403;
+            return next(err);
+        }
+        if (dish !=null && comm !=null){
+            if(req.body.rating){
+                comm.rating = req.body.rating;
             }
-            if (req.body.comment){
-                dish.comments.id(req.params.commentid).comment = req.body.comment;
+            if(req.body.comment){
+                comm.comment = req.body.comment;
             }
             dish.save()
             .then((dish)=>{
@@ -224,7 +236,7 @@ dishRouter.put('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , 
                 .then((dish)=>{
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
-                    res.json(dish);
+                    res.json(dish.comment);
                 });
             }, (err)=>next(err));
         }else if (dish == null){
@@ -244,18 +256,24 @@ dishRouter.put('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , 
 dishRouter.delete('/deshes/:deshid/comments/:commentid', authenticate.verifyUser , (req , res ,next)=>{
     Dishes.findById(req.params.deshid)
     .then((dish)=>{
-        if (dish != null && dish.comments.id(req.params.commentid) != null){
-                dish.comments.id(req.params.commentid).remove();
-                dish.save()
-            .then((dish)=>{
-                Dishes.findById(dish._id)
-                .populate('commets.auther')
-                .then((dish)=>{
-                    res.statusCode = 200;
-                    res.setHeader('Content-Type', 'application/json');
-                    res.json(dish);
-                });
-            }, (err)=>next(err));
+
+        //chack the author here (comm) for the comment id
+        //then i chack the comment author 
+        var comm = dish.comments.id(req.params.commentid);
+        if(!comm.author._id.equals(req.user._id)){
+            var err = new Error('You are not the author of this comment');
+            err.status = 403;
+            return next(err);
+        }
+        if (dish != null && comm != null) {
+            comm.remove();
+            dish.save()
+            .then((dish) => {
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(dish);                
+            }, (err) => next(err));
+
         }else if (dish == null){
             err = new Error('Dish :' + req.params.deshid + 'Not Found!');
             err.status = 404;

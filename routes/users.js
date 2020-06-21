@@ -8,9 +8,14 @@ var router = express.Router();
 router.use(bodyParser.json());
 
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+//Route GET /users
+router.get('/', authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next)=> {
+  User.find({}).then((users) =>{
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(users);
+  },(err) => next(err))
+  .catch((err) => next(err));
 });
 
 //Route POST /signup
@@ -53,7 +58,7 @@ var Token = authenticate.getToken({_id : req.user._id})
 });
 
 //Route GET /logout
-router.get('/logout' , (req , res)=>{
+router.get('/logout' , (req , res , next)=>{
   if (req.session){
     req.session.destroy();
     res.clearCookie('session-id');
@@ -61,7 +66,7 @@ router.get('/logout' , (req , res)=>{
   }else {
     var err = new Error('You are not logged in!');
     err.status = 403;
-    next(err);
+    return next(err);
   }
 });
 

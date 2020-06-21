@@ -22,7 +22,7 @@ leaderRouter.get('/leaders' , (req , res ,next)=>{
     });
 
 //Route POST /leaders
-leaderRouter.post('/leaders',authenticate.verifyUser , (req , res ,next)=>{
+leaderRouter.post('/leaders',authenticate.verifyUser, authenticate.verifyAdmin , (req , res ,next)=>{
     Leaders.create(req.body)
     .then((Leader)=>{
         console.log('You Created : ' , Leader);
@@ -34,13 +34,13 @@ leaderRouter.post('/leaders',authenticate.verifyUser , (req , res ,next)=>{
     });
 
     //Route PUT /leaders
-leaderRouter.put('/leaders',authenticate.verifyUser , (req , res ,next)=>{
+leaderRouter.put('/leaders',authenticate.verifyUser, authenticate.verifyAdmin , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route DELETE /leaders
-leaderRouter.delete('/leaders',authenticate.verifyUser , (req , res ,next)=>{
+leaderRouter.delete('/leaders',authenticate.verifyUser, authenticate.verifyAdmin , (req , res ,next)=>{
     Leaders.remove({})
     .then((resp)=>{
         res.status = 200;
@@ -64,13 +64,13 @@ leaderRouter.get('/leaders/:leaderid' , (req , res ,next)=>{
     });
 
 //Route POST /leaders/:leaderid
-leaderRouter.post('/leaders/:leaderid',authenticate.verifyUser , (req , res ,next)=>{
+leaderRouter.post('/leaders/:leaderid',authenticate.verifyUser, authenticate.verifyAdmin , (req , res ,next)=>{
     res.statusCode = 403;
     res.end('Not Supported Here!');
     });
 
     //Route PUT /;leaders/:leaderid
-leaderRouter.put('/leaders/:leaderid',authenticate.verifyUser , (req , res ,next)=>{
+leaderRouter.put('/leaders/:leaderid',authenticate.verifyUser, authenticate.verifyAdmin , (req , res ,next)=>{
     Leaders.findByIdAndUpdate(req.params.leaderid , {
         $set : req.body
     } , {new : true})
@@ -83,7 +83,7 @@ leaderRouter.put('/leaders/:leaderid',authenticate.verifyUser , (req , res ,next
     });
 
     //Route DELETE /leaders/:leaderid
-leaderRouter.delete('/leaders/:leaderid',authenticate.verifyUser , (req , res ,next)=>{
+leaderRouter.delete('/leaders/:leaderid',authenticate.verifyUser, authenticate.verifyAdmin , (req , res ,next)=>{
     Leaders.findByIdAndRemove(req.params.leaderid)
     .then((resp)=>{
         res.statusCode = 200;
