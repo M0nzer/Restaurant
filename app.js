@@ -12,6 +12,7 @@ var usersRouter = require('./routes/users');
 var deshRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
+var favoriteRouter = require('./routes/favoriteRouter');
 var Dishes = require('./modules/dishes');
 var authenticate = require('./authenticate');
 const passport = require('passport');
@@ -45,6 +46,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/' , deshRouter);
 app.use('/' , leaderRouter);
 app.use('/' , promoRouter);
+app.use('/' , favoriteRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
