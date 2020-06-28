@@ -32,15 +32,15 @@ User.findOne({_id : jwt_payload._id} , (err , user)=>{
     }
 });
 }));
-exports.verifyAdmin = (req)=>{
-    if(req.user.admin){
-       return next();
-    }else{
-        err = new Error('You are not authorized to perform this operation!');
-        err.status = 403;
-       return next(err);
-    }
-}
+//exports.verifyAdmin = (req)=>{
+//    if(req.user.admin){
+//       return next();
+//    }else{
+//        err = new Error('You are not authorized to perform this operation!');
+//err.status = 403;
+//       return next(err);
+//    }
+//}
 exports.verifyUser = passport.authenticate('jwt', {session : false});
 exports.verifyAdmin = (req, res, next)=>{
     if(req.user.admin)
